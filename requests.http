@@ -1,0 +1,35 @@
+### 1. Регистрация. Ожидаем 201, в ответе НЕТ passwordHash
+POST http://localhost:8000/users
+Content-Type: application/json
+
+{ "email": "arthur@example.com", "name": "Arthur", "password": "password123" }
+
+### 2. Тот же email. Ожидаем 409 Conflict
+POST http://localhost:8000/users
+Content-Type: application/json
+
+{ "email": "arthur@example.com", "name": "Другой", "password": "password123" }
+
+### 3. Невалидный email. Ожидаем 400
+POST http://localhost:8000/users
+Content-Type: application/json
+
+{ "email": "not-an-email", "name": "Arthur", "password": "password123" }
+
+### 4. Короткий пароль. Ожидаем 400
+POST http://localhost:8000/users
+Content-Type: application/json
+
+{ "email": "a@example.com", "name": "Arthur", "password": "123" }
+
+### 5. Попытка стать админом. Ожидаем 400 (property role should not exist)
+POST http://localhost:8000/users
+Content-Type: application/json
+
+{ "email": "hacker@example.com", "name": "Hacker", "password": "password123", "role": "admin" }
+
+### 6. Получить пользователя. Ожидаем 200, без passwordHash
+GET http://localhost:8000/users/1
+
+### 7. Несуществующий пользователь. Ожидаем 404
+GET http://localhost:8000/users/999
