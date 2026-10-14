@@ -1,35 +1,39 @@
-### 1. Регистрация. Ожидаем 201, в ответе НЕТ passwordHash
-POST http://localhost:8000/users
+### 1. Регистрация. Ожидаем 201
+POST http://localhost:8000/auth/register
 Content-Type: application/json
 
 { "email": "arthur@example.com", "name": "Arthur", "password": "password123" }
 
-### 2. Тот же email. Ожидаем 409 Conflict
-POST http://localhost:8000/users
+### 2. Логин. Ожидаем 200 и accessToken (токен сохранится в переменную)
+POST http://localhost:8000/auth/login
 Content-Type: application/json
 
-{ "email": "arthur@example.com", "name": "Другой", "password": "password123" }
+{ "email": "arthur@example.com", "password": "password123" }
 
-### 3. Невалидный email. Ожидаем 400
-POST http://localhost:8000/users
+> {% client.global.set("token", response.body.accessToken); %}
+
+### 3. Кто я, с токеном. Ожидаем 200
+GET http://localhost:8000/auth/me
+Authorization: Bearer {{token}}
+
+### 4. Кто я, без токена. Ожидаем 401
+GET http://localhost:8000/auth/me
+
+### 5. Кто я, с мусорным токеном. Ожидаем 401
+GET http://localhost:8000/auth/me
+Authorization: Bearer abc.def.ghi
+
+### 6. Неверный пароль. Ожидаем 401
+POST http://localhost:8000/auth/login
 Content-Type: application/json
 
-{ "email": "not-an-email", "name": "Arthur", "password": "password123" }
+{ "email": "arthur@example.com", "password": "wrongpassword" }
 
-### 4. Короткий пароль. Ожидаем 400
-POST http://localhost:8000/users
+### 7. Несуществующий email. Ожидаем 401 (то же сообщение, что в п. 6)
+POST http://localhost:8000/auth/login
 Content-Type: application/json
 
-{ "email": "a@example.com", "name": "Arthur", "password": "123" }
+{ "email": "nobody@example.com", "password": "password123" }
 
-### 5. Попытка стать админом. Ожидаем 400 (property role should not exist)
-POST http://localhost:8000/users
-Content-Type: application/json
-
-{ "email": "hacker@example.com", "name": "Hacker", "password": "password123", "role": "admin" }
-
-### 6. Получить пользователя. Ожидаем 200, без passwordHash
+### 8. Публичный профиль. Ожидаем 200
 GET http://localhost:8000/users/1
-
-### 7. Несуществующий пользователь. Ожидаем 404
-GET http://localhost:8000/users/999

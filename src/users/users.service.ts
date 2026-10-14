@@ -28,4 +28,11 @@ export class UsersService {
     if (!user) throw new NotFoundException(`User #${id} not found`);
     return user;
   }
+
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'name', 'role', 'passwordHash'],
+    });
+  }
 }
